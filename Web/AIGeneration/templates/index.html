@@ -17,7 +17,6 @@
         #switch-camera-btn img { width: 100%; height: 100%; }
 
         #countdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.5); z-index: 20; font-size: 20em; color: white; }
-        /* ОБНОВЛЕННАЯ АНИМАЦИЯ ТАЙМЕРА */
         .countdown-number { animation: zoom-in-out 0.7s ease-in-out forwards; }
         @keyframes zoom-in-out {
             0% { transform: scale(0.5); opacity: 0; }
@@ -50,28 +49,12 @@
         .footprint:nth-child(3) { top: 20px; left: 50%; animation-delay: 0.7s; }
         .footprint:nth-child(4) { top: 40px; left: 70%; animation-delay: 1.0s; transform: scaleX(-1); }
         @keyframes step { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
-        .arrow { position: absolute; width: 80px; right: 0; bottom: 0; opacity: 0; animation: fade-in 0.5s ease-in forwards 1.5s; }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
         #result-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; }
         #result-img { max-height: 70%; max-width: 90%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
 
-        /* НОВЫЕ СТИЛИ ДЛЯ КНОПКИ "СОХРАНИТЬ" */
-        #result-container button {
-            font-family: 'CustomFont', sans-serif;
-            font-size: 1.8em;
-            padding: 15px 35px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            background-color: #d93434;
-            color: white;
-            border-bottom: 5px solid #a62828;
-            transition: all 0.1s ease-in-out;
-        }
-        #result-container button:active {
-            transform: translateY(3px);
-            border-bottom-width: 2px;
-        }
+        #result-container button { font-family: 'CustomFont', sans-serif; font-size: 1.8em; padding: 15px 35px; border-radius: 8px; border: none; cursor: pointer; background-color: #d93434; color: white; border-bottom: 5px solid #a62828; transition: all 0.1s ease-in-out; }
+        #result-container button:active { transform: translateY(3px); border-bottom-width: 2px; }
 
         @media (orientation: landscape) { .slide { font-size: 2em; gap: 20px; } #progress-container { top: 15px; } #slides-container { height: calc(100% - 100px); margin-top: 60px; } }
         @media (orientation: portrait) { .slide { font-size: 1.8em; } }
@@ -100,7 +83,21 @@
     const countdownOverlay = document.getElementById('countdown-overlay');
     const countdownNumber = document.getElementById('countdown-number');
     let currentFacingMode = 'environment';
-    function preloadImages() { slidesData.forEach(slide => { if (slide.image) { const img = new Image(); img.src = slide.image; } }); ['/static/images/footprint.png', '/static/images/arrow.svg'].forEach(src => { const img = new Image(); img.src = src; }); }
+
+    function preloadImages() {
+        slidesData.forEach(slide => {
+            if (slide.image) {
+                const img = new Image();
+                img.src = slide.image;
+            }
+        });
+        // ИЗМЕНЕНИЕ: Убрана предзагрузка для arrow.svg
+        ['/static/images/footprint.png'].forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+    }
+
     async function startCamera(facingMode) { if (video.srcObject) { video.srcObject.getTracks().forEach(track => track.stop()); } const constraints = { video: { facingMode: { exact: facingMode } } }; try { const stream = await navigator.mediaDevices.getUserMedia(constraints); video.srcObject = stream; currentFacingMode = facingMode; video.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)'; } catch (err) { console.warn(`Точный режим ${facingMode} не сработал, пробуем общий.`); try { const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true }); video.srcObject = fallbackStream; currentFacingMode = 'environment'; } catch (fallbackErr) { alert("Не удалось запустить камеру."); } } }
     switchCameraBtn.addEventListener('click', () => { const newFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user'; startCamera(newFacingMode); });
 
@@ -108,16 +105,14 @@
         startCountdown();
     });
 
-    // ОБНОВЛЕННАЯ ФУНКЦИЯ ОБРАТНОГО ОТСЧЕТА
     function startCountdown() {
         countdownOverlay.style.display = 'flex';
         let count = 3;
-
         function showNumber() {
             if (count > 0) {
                 countdownNumber.innerHTML = `<span class="countdown-number">${count}</span>`;
                 count--;
-                setTimeout(showNumber, 700); // Показываем следующую цифру через 700 мс
+                setTimeout(showNumber, 700);
             } else {
                 countdownOverlay.style.display = 'none';
                 takePictureAndGenerate();
@@ -177,7 +172,14 @@
                 slideElement.classList.add('slide');
                 let contentHTML = `<span>${slideData.text}</span>`;
                 if (slideData.type === 'footprints') {
-                    contentHTML += `<div class="footprints-container"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/arrow.svg" class="arrow"></div>`;
+                    // ИЗМЕНЕНИЕ: Строка с arrow.svg удалена отсюда
+                    contentHTML += `
+                            <div class="footprints-container">
+                                <img src="/static/images/footprint.png" class="footprint">
+                                <img src="/static/images/footprint.png" class="footprint">
+                                <img src="/static/images/footprint.png" class="footprint">
+                                <img src="/static/images/footprint.png" class="footprint">
+                            </div>`;
                 } else if (slideData.image) {
                     const rotationClass = (currentSlideIndex % 2 === 0) ? 'rotate-right' : 'rotate-left';
                     contentHTML += `<div class="polaroid ${rotationClass}"><img src="${slideData.image}"></div>`;
