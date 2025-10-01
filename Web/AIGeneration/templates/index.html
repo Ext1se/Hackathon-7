@@ -42,31 +42,54 @@
         .footprint:nth-child(4) { top: 40px; left: 70%; animation-delay: 1.0s; transform: scaleX(-1); }
         @keyframes step { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
 
-        #result-container { display: none; flex-direction: column; justify-content: space-evenly; align-items: center; background-color: #f0f0f0; padding: 20px 0; box-sizing: border-box; width: 100%; height: 100%; }
-        #result-container h2 { flex-shrink: 0; margin-top: 20px; }
-        #result-img { max-height: 50%; max-width: 90%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-        .result-buttons { display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; width: 80%; max-width: 400px; }
-
-        /* ОБЩИЙ СТИЛЬ ДЛЯ ВСЕХ КНОПОК НА ЭКРАНЕ РЕЗУЛЬТАТА И QR */
+        
+        #result-container {
+            display: none;
+            flex-direction: column;
+            justify-content: flex-start; 
+            padding-top: 5vh; 
+            align-items: center;
+            background-color: #f0f0f0;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+        }
+        #result-container h2 {
+            margin-bottom: 2vh; 
+        }
+        #result-img {
+            max-height: 55%; 
+            max-width: 90%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            margin-bottom: 3vh; 
+        }
+        .result-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 80%;
+            max-width: 400px;
+        }
         .styled-button {
             font-family: 'CustomFont', sans-serif;
-            font-size: 1.5em; /* Уменьшил размер шрифта */
-            padding: 12px 20px; /* Уменьшил отступы */
+            font-size: 1.4em; 
+            padding: 10px 15px; 
             border-radius: 8px;
             border: none;
             cursor: pointer;
             color: white;
-            border-bottom-width: 4px; /* Уменьшил тень */
+            border-bottom-width: 4px;
             border-style: solid;
             transition: all 0.1s ease-in-out;
             width: 100%;
             box-sizing: border-box;
         }
         .styled-button:active { transform: translateY(2px); border-bottom-width: 2px; }
-
         #save-btn-wrapper button { background-color: #d93434; border-color: #a62828; }
         #print-btn { background-color: #28a745; border-color: #1e7e34; }
         #back-btn { background-color: #6c757d; border-color: #545b62; }
+       
 
         #print-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 30px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; z-index: 30; position: fixed; top: 0; left: 0; }
         #print-container img { width: 60%; max-width: 300px; }
@@ -101,7 +124,6 @@
 <script>
     const SLIDE_DURATION_MS = 3000;
     const slidesData = [ { text: "Загляни к нам в парк, там ждут", type: 'footprints' }, { text: "путешествие внутрь мультфильма", image: '/static/images/slide1.jpg' }, { text: "тир Пети и волка", image: '/static/images/slide2.jpg' }, { text: "оживи героев мультфильмов", image: '/static/images/slide3.jpg' }, { text: "Купольный кинотеатр", image: '/static/images/slide4.jpg' }, { text: "Прогулка с карлсоном по крышам", image: '/static/images/slide5.jpg' }, { text: "домик Чебурашки", image: '/static/images/slide6.jpg' }, { text: "и много других интерактивных зон", image: null }, { text: "билеты от 800 рублей за 2 часа", image: null } ];
-
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const captureBtn = document.getElementById('capture-btn');
