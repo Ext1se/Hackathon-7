@@ -16,22 +16,12 @@
         #switch-camera-btn { position: absolute; right: 40px; width: 60px; height: 60px; background-color: lightgrey; border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 12px; box-sizing: border-box; }
         #switch-camera-btn img { width: 100%; height: 100%; }
 
-        /* НОВЫЕ СТИЛИ ДЛЯ ОБРАТНОГО ОТСЧЕТА */
-        #countdown-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; /* Скрыт по умолчанию */
-            justify-content: center; align-items: center;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 20;
-            font-size: 20em;
-            color: white;
-        }
-        .countdown-number {
-            animation: zoom-in-out 1s ease-in-out forwards;
-        }
+        #countdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.5); z-index: 20; font-size: 20em; color: white; }
+        /* ОБНОВЛЕННАЯ АНИМАЦИЯ ТАЙМЕРА */
+        .countdown-number { animation: zoom-in-out 0.7s ease-in-out forwards; }
         @keyframes zoom-in-out {
             0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
+            40% { transform: scale(1.1); opacity: 1; }
             100% { transform: scale(1); opacity: 0; }
         }
 
@@ -50,7 +40,6 @@
         .polaroid { background: white; padding: 10px 10px 20px 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 1px solid #eee; width: 80%; max-width: 350px; opacity: 0; animation: appear 0.8s ease-out forwards; }
         .polaroid img { width: 100%; display: block; }
         @keyframes appear { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
-        /* НОВЫЕ СТИЛИ ДЛЯ ПОВОРОТА КАРТИНОК */
         .polaroid.rotate-left { transform: rotate(-4deg); }
         .polaroid.rotate-right { transform: rotate(4deg); }
 
@@ -65,33 +54,39 @@
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         #result-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; }
         #result-img { max-height: 70%; max-width: 90%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+
+        /* НОВЫЕ СТИЛИ ДЛЯ КНОПКИ "СОХРАНИТЬ" */
+        #result-container button {
+            font-family: 'CustomFont', sans-serif;
+            font-size: 1.8em;
+            padding: 15px 35px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background-color: #d93434;
+            color: white;
+            border-bottom: 5px solid #a62828;
+            transition: all 0.1s ease-in-out;
+        }
+        #result-container button:active {
+            transform: translateY(3px);
+            border-bottom-width: 2px;
+        }
+
         @media (orientation: landscape) { .slide { font-size: 2em; gap: 20px; } #progress-container { top: 15px; } #slides-container { height: calc(100% - 100px); margin-top: 60px; } }
         @media (orientation: portrait) { .slide { font-size: 1.8em; } }
     </style>
 </head>
 <body>
 <div id="camera-wrapper"><video id="video" autoplay playsinline></video><div class="camera-controls"><button id="capture-btn"></button><button id="switch-camera-btn"><img src="/static/images/switch_camera.svg" alt="Сменить камеру"></button></div></div>
-
 <div id="countdown-overlay"><span id="countdown-number"></span></div>
-
 <div id="loader"><div id="progress-container"><p>подождите идёт генерация...</p><div id="progress-bar"><div id="progress-bar-inner"></div></div></div><div id="slides-container"></div></div>
 <div id="result-container"><h2>Ваше фото готово!</h2><img id="result-img" alt="Сгенерированное изображение"><a id="save-btn" href="#" download="ai_photo.png"><button>Сохранить</button></a></div>
 <canvas id="canvas" style="display:none;"></canvas>
 
 <script>
     const SLIDE_DURATION_MS = 3000;
-    const slidesData = [
-        { text: "Загляни к нам в парк, там ждут", type: 'footprints' },
-        { text: "путешествие внутрь мультфильма", image: '/static/images/slide1.jpg' },
-        { text: "тир Пети и волка", image: '/static/images/slide2.jpg' },
-        { text: "оживи героев мультфильмов", image: '/static/images/slide3.jpg' },
-        { text: "Купольный кинотеатр", image: '/static/images/slide4.jpg' },
-        { text: "Прогулка с карлсоном по крышам", image: '/static/images/slide5.jpg' },
-        { text: "домик Чебурашки", image: '/static/images/slide6.jpg' },
-        { text: "и много других интерактивных зон", image: null },
-        { text: "билеты от 800 рублей за 2 часа", image: null }
-    ];
-
+    const slidesData = [ { text: "Загляни к нам в парк, там ждут", type: 'footprints' }, { text: "путешествие внутрь мультфильма", image: '/static/images/slide1.jpg' }, { text: "тир Пети и волка", image: '/static/images/slide2.jpg' }, { text: "оживи героев мультфильмов", image: '/static/images/slide3.jpg' }, { text: "Купольный кинотеатр", image: '/static/images/slide4.jpg' }, { text: "Прогулка с карлсоном по крышам", image: '/static/images/slide5.jpg' }, { text: "домик Чебурашки", image: '/static/images/slide6.jpg' }, { text: "и много других интерактивных зон", image: null }, { text: "билеты от 800 рублей за 2 часа", image: null } ];
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const captureBtn = document.getElementById('capture-btn');
@@ -105,37 +100,30 @@
     const countdownOverlay = document.getElementById('countdown-overlay');
     const countdownNumber = document.getElementById('countdown-number');
     let currentFacingMode = 'environment';
-
     function preloadImages() { slidesData.forEach(slide => { if (slide.image) { const img = new Image(); img.src = slide.image; } }); ['/static/images/footprint.png', '/static/images/arrow.svg'].forEach(src => { const img = new Image(); img.src = src; }); }
     async function startCamera(facingMode) { if (video.srcObject) { video.srcObject.getTracks().forEach(track => track.stop()); } const constraints = { video: { facingMode: { exact: facingMode } } }; try { const stream = await navigator.mediaDevices.getUserMedia(constraints); video.srcObject = stream; currentFacingMode = facingMode; video.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)'; } catch (err) { console.warn(`Точный режим ${facingMode} не сработал, пробуем общий.`); try { const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true }); video.srcObject = fallbackStream; currentFacingMode = 'environment'; } catch (fallbackErr) { alert("Не удалось запустить камеру."); } } }
     switchCameraBtn.addEventListener('click', () => { const newFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user'; startCamera(newFacingMode); });
 
-    // --- ОБНОВЛЕННАЯ ЛОГИКА НАЖАТИЯ НА КНОПКУ "ФОТО" ---
     captureBtn.addEventListener('click', () => {
         startCountdown();
     });
 
+    // ОБНОВЛЕННАЯ ФУНКЦИЯ ОБРАТНОГО ОТСЧЕТА
     function startCountdown() {
-        let count = 3;
         countdownOverlay.style.display = 'flex';
+        let count = 3;
 
-        function updateNumber() {
-            countdownNumber.textContent = count;
-            countdownNumber.className = 'countdown-number'; // Перезапускаем анимацию
-            count--;
-        }
-
-        const timer = setInterval(() => {
+        function showNumber() {
             if (count > 0) {
-                updateNumber();
+                countdownNumber.innerHTML = `<span class="countdown-number">${count}</span>`;
+                count--;
+                setTimeout(showNumber, 700); // Показываем следующую цифру через 700 мс
             } else {
-                clearInterval(timer);
                 countdownOverlay.style.display = 'none';
-                takePictureAndGenerate(); // Делаем фото после отсчета
+                takePictureAndGenerate();
             }
-        }, 1000);
-
-        updateNumber(); // Показываем первую цифру сразу
+        }
+        showNumber();
     }
 
     function takePictureAndGenerate() {
@@ -143,19 +131,15 @@
         const videoWidth = video.videoWidth;
         const videoHeight = video.videoHeight;
         const angle = screen.orientation.angle;
-
         const isSideways = angle === 90 || angle === 270 || angle === -90;
         canvas.width = isSideways ? videoHeight : videoWidth;
         canvas.height = isSideways ? videoWidth : videoHeight;
-
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(angle * Math.PI / 180);
         if (currentFacingMode === 'user') { ctx.scale(-1, 1); }
         ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
-
         cameraWrapper.style.display = 'none';
         loader.style.display = 'flex';
-
         canvas.toBlob(blob => {
             const formData = new FormData();
             formData.append('image', blob, 'capture.png');
@@ -185,28 +169,19 @@
             let currentSlideIndex = -1;
             function showNextSlide() {
                 const oldSlide = slidesContainer.querySelector('.slide');
-                if (oldSlide) {
-                    oldSlide.classList.remove('active');
-                    oldSlide.classList.add('exiting');
-                    setTimeout(() => oldSlide.remove(), 500);
-                }
+                if (oldSlide) { oldSlide.classList.remove('active'); oldSlide.classList.add('exiting'); setTimeout(() => oldSlide.remove(), 500); }
                 currentSlideIndex++;
-                if (currentSlideIndex >= slidesData.length) {
-                    resolve(); return;
-                }
+                if (currentSlideIndex >= slidesData.length) { resolve(); return; }
                 const slideData = slidesData[currentSlideIndex];
                 const slideElement = document.createElement('div');
                 slideElement.classList.add('slide');
                 let contentHTML = `<span>${slideData.text}</span>`;
-
                 if (slideData.type === 'footprints') {
                     contentHTML += `<div class="footprints-container"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/arrow.svg" class="arrow"></div>`;
                 } else if (slideData.image) {
-                    // Динамически добавляем класс для поворота
                     const rotationClass = (currentSlideIndex % 2 === 0) ? 'rotate-right' : 'rotate-left';
                     contentHTML += `<div class="polaroid ${rotationClass}"><img src="${slideData.image}"></div>`;
                 }
-
                 slideElement.innerHTML = contentHTML;
                 slidesContainer.appendChild(slideElement);
                 setTimeout(() => { slideElement.classList.add('active'); }, 50);
