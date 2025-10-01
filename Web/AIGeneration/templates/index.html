@@ -10,22 +10,14 @@
         body { font-family: 'CustomFont', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; margin: 0; background-color: #f0f0f0; color: #333; text-align: center; overflow: hidden; }
         #camera-wrapper { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         #video { width: 100%; height: 100%; object-fit: cover; }
-        /* ИЗМЕНЕНИЕ: bottom увеличено для поднятия кнопок */
         .camera-controls { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 5; }
         #capture-btn { width: var(--button-size); height: var(--button-size); background-color: #fff; border-radius: 50%; border: 6px solid #fff; box-shadow: 0 0 0 4px rgba(0,0,0,0.2); cursor: pointer; outline: none; transition: transform 0.1s; background-image: url('/static/images/camera_shutter.svg'); background-size: 60%; background-repeat: no-repeat; background-position: center; }
         #capture-btn:active { transform: scale(0.9); }
-        /* ИЗМЕНЕНИЕ: bottom увеличено для поднятия кнопки */
-        #switch-camera-btn { position: absolute; right: 40px; bottom: 10px; /* Относительно .camera-controls, который сам поднялся */ width: 60px; height: 60px; background-color: lightgrey; border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 12px; box-sizing: border-box; }
+        #switch-camera-btn { position: absolute; right: 40px; bottom: 10px; width: 60px; height: 60px; background-color: lightgrey; border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 12px; box-sizing: border-box; }
         #switch-camera-btn img { width: 100%; height: 100%; }
-
         #countdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.5); z-index: 20; font-size: 20em; color: white; }
         .countdown-number { animation: zoom-in-out 0.7s ease-in-out forwards; }
-        @keyframes zoom-in-out {
-            0% { transform: scale(0.5); opacity: 0; }
-            40% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 0; }
-        }
-
+        @keyframes zoom-in-out { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; flex-direction: column; justify-content: center; align-items: center; z-index: 10; padding: 20px; box-sizing: border-box; }
         #progress-container { position: absolute; top: 30px; width: 80%; text-align: center; }
         #progress-bar { width: 100%; height: 15px; background-color: #e0e0e0; border-radius: 10px; overflow: hidden; margin-top: 10px; }
@@ -37,13 +29,11 @@
         .slide.exiting { animation: slide-out 0.5s ease-in forwards; }
         @keyframes slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-100%); opacity: 0; } }
-
         .polaroid { background: white; padding: 10px 10px 20px 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 1px solid #eee; width: 80%; max-width: 350px; opacity: 0; animation: appear 0.8s ease-out forwards; }
         .polaroid img { width: 100%; display: block; }
         @keyframes appear { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
         .polaroid.rotate-left { transform: rotate(-4deg); }
         .polaroid.rotate-right { transform: rotate(4deg); }
-
         .footprints-container { position: relative; width: 80%; max-width: 400px; height: 100px; }
         .footprint { position: absolute; width: 50px; opacity: 0; animation: step 2s ease-in-out forwards; }
         .footprint:nth-child(1) { top: 20px; left: 10%; animation-delay: 0.1s; }
@@ -52,11 +42,21 @@
         .footprint:nth-child(4) { top: 40px; left: 70%; animation-delay: 1.0s; transform: scaleX(-1); }
         @keyframes step { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
 
-        #result-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; }
-        #result-img { max-height: 70%; max-width: 90%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-
-        #result-container button { font-family: 'CustomFont', sans-serif; font-size: 1.8em; padding: 15px 35px; border-radius: 8px; border: none; cursor: pointer; background-color: #d93434; color: white; border-bottom: 5px solid #a62828; transition: all 0.1s ease-in-out; }
+        /* ОБНОВЛЕННЫЕ СТИЛИ ЭКРАНА РЕЗУЛЬТАТА */
+        #result-container { display: none; flex-direction: column; justify-content: space-evenly; /* Распределяет элементы по высоте */ align-items: center; background-color: #f0f0f0; padding: 20px 0; box-sizing: border-box; width: 100%; height: 100%; }
+        #result-container h2 { flex-shrink: 0; }
+        #result-img { max-height: 55%; /* Уменьшил, чтобы все влезло */ max-width: 90%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .result-buttons { display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; }
+        #result-container button { font-family: 'CustomFont', sans-serif; font-size: 1.8em; padding: 15px 35px; border-radius: 8px; border: none; cursor: pointer; color: white; border-bottom-width: 5px; border-style: solid; transition: all 0.1s ease-in-out; }
         #result-container button:active { transform: translateY(3px); border-bottom-width: 2px; }
+        #save-btn-wrapper button { background-color: #d93434; border-color: #a62828; }
+        #print-btn { background-color: #28a745; border-color: #1e7e34; }
+
+        /* НОВЫЕ СТИЛИ ДЛЯ ЭКРАНА ПЕЧАТИ (QR-КОД) */
+        #print-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 30px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; z-index: 30; position: fixed; top: 0; left: 0; }
+        #print-container img { width: 60%; max-width: 300px; }
+        #print-container p { font-size: 1.5em; max-width: 80%; }
+        #back-btn { background-color: #6c757d; border-color: #545b62; }
 
         @media (orientation: landscape) { .slide { font-size: 2em; gap: 20px; } #progress-container { top: 15px; } #slides-container { height: calc(100% - 100px); margin-top: 60px; } }
         @media (orientation: portrait) { .slide { font-size: 1.8em; } }
@@ -66,12 +66,28 @@
 <div id="camera-wrapper"><video id="video" autoplay playsinline></video><div class="camera-controls"><button id="capture-btn"></button><button id="switch-camera-btn"><img src="/static/images/switch_camera.svg" alt="Сменить камеру"></button></div></div>
 <div id="countdown-overlay"><span id="countdown-number"></span></div>
 <div id="loader"><div id="progress-container"><p>подождите идёт генерация...</p><div id="progress-bar"><div id="progress-bar-inner"></div></div></div><div id="slides-container"></div></div>
-<div id="result-container"><h2>Ваше фото готово!</h2><img id="result-img" alt="Сгенерированное изображение"><a id="save-btn" href="#" download="ai_photo.png"><button>Сохранить</button></a></div>
+
+<div id="result-container">
+    <h2>Ваше фото готово!</h2>
+    <img id="result-img" alt="Сгенерированное изображение">
+    <div class="result-buttons">
+        <a id="save-btn-wrapper" href="#" download="ai_photo.png"><button>Сохранить</button></a>
+        <button id="print-btn">Распечатать бесплатно</button>
+    </div>
+</div>
+
+<div id="print-container">
+    <img src="/static/images/fake_qr_code.png" alt="QR-код для печати">
+    <p>Для печати покажите QR на стойке администратора в музее</p>
+    <button id="back-btn">Назад</button>
+</div>
+
 <canvas id="canvas" style="display:none;"></canvas>
 
 <script>
     const SLIDE_DURATION_MS = 3000;
     const slidesData = [ { text: "Загляни к нам в парк, там ждут", type: 'footprints' }, { text: "путешествие внутрь мультфильма", image: '/static/images/slide1.jpg' }, { text: "тир Пети и волка", image: '/static/images/slide2.jpg' }, { text: "оживи героев мультфильмов", image: '/static/images/slide3.jpg' }, { text: "Купольный кинотеатр", image: '/static/images/slide4.jpg' }, { text: "Прогулка с карлсоном по крышам", image: '/static/images/slide5.jpg' }, { text: "домик Чебурашки", image: '/static/images/slide6.jpg' }, { text: "и много других интерактивных зон", image: null }, { text: "билеты от 800 рублей за 2 часа", image: null } ];
+
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const captureBtn = document.getElementById('capture-btn');
@@ -81,117 +97,34 @@
     const slidesContainer = document.getElementById('slides-container');
     const resultContainer = document.getElementById('result-container');
     const resultImg = document.getElementById('result-img');
-    const saveBtn = document.getElementById('save-btn');
+    const saveBtnWrapper = document.getElementById('save-btn-wrapper');
     const countdownOverlay = document.getElementById('countdown-overlay');
     const countdownNumber = document.getElementById('countdown-number');
+
+    // НОВЫЕ ЭЛЕМЕНТЫ ДЛЯ КНОПОК ПЕЧАТИ
+    const printBtn = document.getElementById('print-btn');
+    const printContainer = document.getElementById('print-container');
+    const backBtn = document.getElementById('back-btn');
+
     let currentFacingMode = 'environment';
-
-    function preloadImages() {
-        slidesData.forEach(slide => {
-            if (slide.image) {
-                const img = new Image();
-                img.src = slide.image;
-            }
-        });
-        ['/static/images/footprint.png'].forEach(src => {
-            const img = new Image();
-            img.src = src;
-        });
-    }
-
+    function preloadImages() { slidesData.forEach(slide => { if (slide.image) { const img = new Image(); img.src = slide.image; } }); ['/static/images/footprint.png'].forEach(src => { const img = new Image(); img.src = src; }); }
     async function startCamera(facingMode) { if (video.srcObject) { video.srcObject.getTracks().forEach(track => track.stop()); } const constraints = { video: { facingMode: { exact: facingMode } } }; try { const stream = await navigator.mediaDevices.getUserMedia(constraints); video.srcObject = stream; currentFacingMode = facingMode; video.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)'; } catch (err) { console.warn(`Точный режим ${facingMode} не сработал, пробуем общий.`); try { const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true }); video.srcObject = fallbackStream; currentFacingMode = 'environment'; } catch (fallbackErr) { alert("Не удалось запустить камеру."); } } }
     switchCameraBtn.addEventListener('click', () => { const newFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user'; startCamera(newFacingMode); });
+    captureBtn.addEventListener('click', () => { startCountdown(); });
+    function startCountdown() { countdownOverlay.style.display = 'flex'; let count = 3; function showNumber() { if (count > 0) { countdownNumber.innerHTML = `<span class="countdown-number">${count}</span>`; count--; setTimeout(showNumber, 700); } else { countdownOverlay.style.display = 'none'; takePictureAndGenerate(); } } showNumber(); }
+    function takePictureAndGenerate() { const ctx = canvas.getContext('2d'); const videoWidth = video.videoWidth; const videoHeight = video.videoHeight; const angle = screen.orientation.angle; const isSideways = angle === 90 || angle === 270 || angle === -90; canvas.width = isSideways ? videoHeight : videoWidth; canvas.height = isSideways ? videoWidth : videoHeight; ctx.translate(canvas.width / 2, canvas.height / 2); ctx.rotate(angle * Math.PI / 180); if (currentFacingMode === 'user') { ctx.scale(-1, 1); } ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight); cameraWrapper.style.display = 'none'; loader.style.display = 'flex'; canvas.toBlob(blob => { const formData = new FormData(); formData.append('image', blob, 'capture.png'); const generationPromise = fetch('/generate', { method: 'POST', body: formData }); const slideshowPromise = runSlideshow(); Promise.all([generationPromise, slideshowPromise]).then(async ([response]) => { if (!response.ok) { return response.text().then(text => { throw new Error(`Ошибка сервера: ${text || response.statusText}`); }); } const generatedBlob = await response.blob(); const imageUrl = URL.createObjectURL(generatedBlob); resultImg.src = imageUrl; saveBtnWrapper.href = imageUrl; loader.style.display = 'none'; resultContainer.style.display = 'flex'; }).catch(err => { console.error("Ошибка генерации: ", err); alert("Произошла ошибка во время генерации. Попробуйте снова."); loader.style.display = 'none'; cameraWrapper.style.display = 'flex'; }); }, 'image/jpeg', 0.9); }
+    function runSlideshow() { return new Promise(resolve => { let currentSlideIndex = -1; function showNextSlide() { const oldSlide = slidesContainer.querySelector('.slide'); if (oldSlide) { oldSlide.classList.remove('active'); oldSlide.classList.add('exiting'); setTimeout(() => oldSlide.remove(), 500); } currentSlideIndex++; if (currentSlideIndex >= slidesData.length) { resolve(); return; } const slideData = slidesData[currentSlideIndex]; const slideElement = document.createElement('div'); slideElement.classList.add('slide'); let contentHTML = `<span>${slideData.text}</span>`; if (slideData.type === 'footprints') { contentHTML += `<div class="footprints-container"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"></div>`; } else if (slideData.image) { const rotationClass = (currentSlideIndex % 2 === 0) ? 'rotate-right' : 'rotate-left'; contentHTML += `<div class="polaroid ${rotationClass}"><img src="${slideData.image}"></div>`; } slideElement.innerHTML = contentHTML; slidesContainer.appendChild(slideElement); setTimeout(() => { slideElement.classList.add('active'); }, 50); setTimeout(showNextSlide, SLIDE_DURATION_MS); } showNextSlide(); }); }
 
-    captureBtn.addEventListener('click', () => {
-        startCountdown();
+    // НОВАЯ ЛОГИКА ДЛЯ ПЕРЕКЛЮЧЕНИЯ НА ЭКРАН ПЕЧАТИ
+    printBtn.addEventListener('click', () => {
+        resultContainer.style.display = 'none';
+        printContainer.style.display = 'flex';
     });
 
-    function startCountdown() {
-        countdownOverlay.style.display = 'flex';
-        let count = 3;
-        function showNumber() {
-            if (count > 0) {
-                countdownNumber.innerHTML = `<span class="countdown-number">${count}</span>`;
-                count--;
-                setTimeout(showNumber, 700);
-            } else {
-                countdownOverlay.style.display = 'none';
-                takePictureAndGenerate();
-            }
-        }
-        showNumber();
-    }
-
-    function takePictureAndGenerate() {
-        const ctx = canvas.getContext('2d');
-        const videoWidth = video.videoWidth;
-        const videoHeight = video.videoHeight;
-        const angle = screen.orientation.angle;
-        const isSideways = angle === 90 || angle === 270 || angle === -90;
-        canvas.width = isSideways ? videoHeight : videoWidth;
-        canvas.height = isSideways ? videoWidth : videoHeight;
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(angle * Math.PI / 180);
-        if (currentFacingMode === 'user') { ctx.scale(-1, 1); }
-        ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
-        cameraWrapper.style.display = 'none';
-        loader.style.display = 'flex';
-        canvas.toBlob(blob => {
-            const formData = new FormData();
-            formData.append('image', blob, 'capture.png');
-            const generationPromise = fetch('/generate', { method: 'POST', body: formData });
-            const slideshowPromise = runSlideshow();
-            Promise.all([generationPromise, slideshowPromise])
-                .then(async ([response]) => {
-                    if (!response.ok) { return response.text().then(text => { throw new Error(`Ошибка сервера: ${text || response.statusText}`); }); }
-                    const generatedBlob = await response.blob();
-                    const imageUrl = URL.createObjectURL(generatedBlob);
-                    resultImg.src = imageUrl;
-                    saveBtn.href = imageUrl;
-                    loader.style.display = 'none';
-                    resultContainer.style.display = 'flex';
-                })
-                .catch(err => {
-                    console.error("Ошибка генерации: ", err);
-                    alert("Произошла ошибка во время генерации. Попробуйте снова.");
-                    loader.style.display = 'none';
-                    cameraWrapper.style.display = 'flex';
-                });
-        }, 'image/jpeg', 0.9);
-    }
-
-    function runSlideshow() {
-        return new Promise(resolve => {
-            let currentSlideIndex = -1;
-            function showNextSlide() {
-                const oldSlide = slidesContainer.querySelector('.slide');
-                if (oldSlide) { oldSlide.classList.remove('active'); oldSlide.classList.add('exiting'); setTimeout(() => oldSlide.remove(), 500); }
-                currentSlideIndex++;
-                if (currentSlideIndex >= slidesData.length) { resolve(); return; }
-                const slideData = slidesData[currentSlideIndex];
-                const slideElement = document.createElement('div');
-                slideElement.classList.add('slide');
-                let contentHTML = `<span>${slideData.text}</span>`;
-                if (slideData.type === 'footprints') {
-                    contentHTML += `
-                            <div class="footprints-container">
-                                <img src="/static/images/footprint.png" class="footprint">
-                                <img src="/static/images/footprint.png" class="footprint">
-                                <img src="/static/images/footprint.png" class="footprint">
-                                <img src="/static/images/footprint.png" class="footprint">
-                            </div>`;
-                } else if (slideData.image) {
-                    const rotationClass = (currentSlideIndex % 2 === 0) ? 'rotate-right' : 'rotate-left';
-                    contentHTML += `<div class="polaroid ${rotationClass}"><img src="${slideData.image}"></div>`;
-                }
-                slideElement.innerHTML = contentHTML;
-                slidesContainer.appendChild(slideElement);
-                setTimeout(() => { slideElement.classList.add('active'); }, 50);
-                setTimeout(showNextSlide, SLIDE_DURATION_MS);
-            }
-            showNextSlide();
-        });
-    }
+    backBtn.addEventListener('click', () => {
+        printContainer.style.display = 'none';
+        resultContainer.style.display = 'flex';
+    });
 
     preloadImages();
     startCamera('environment');
