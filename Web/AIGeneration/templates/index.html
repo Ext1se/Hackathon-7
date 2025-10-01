@@ -2,10 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>AI Фото-будка</title>
     <style>
-        /* ИСПРАВЛЕНЫ ПУТИ К ФАЙЛАМ */
         @font-face { font-family: 'CustomFont'; src: url('/static/fonts/5_Some_Times_Later.otf') format('opentype'); }
         :root { --button-size: 80px; --primary-color: #007aff; }
         body { font-family: 'CustomFont', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; margin: 0; background-color: #f0f0f0; color: #333; text-align: center; overflow: hidden; }
@@ -16,7 +15,7 @@
         #capture-btn:active { transform: scale(0.9); }
         #switch-camera-btn { position: absolute; right: 40px; width: 60px; height: 60px; background-color: rgba(0,0,0,0.3); border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 12px; box-sizing: border-box; }
         #switch-camera-btn img { width: 100%; height: 100%; }
-        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; flex-direction: column; justify-content: center; align-items: center; z-index: 10; padding: 20px; box-sizing: border-box; }
         #progress-container { position: absolute; top: 30px; width: 80%; text-align: center; }
         #progress-bar { width: 100%; height: 15px; background-color: #e0e0e0; border-radius: 10px; overflow: hidden; margin-top: 10px; }
         #progress-bar-inner { width: 100%; height: 100%; background-color: var(--primary-color); border-radius: 10px; animation: progress-indeterminate 2s infinite linear; }
@@ -43,29 +42,25 @@
         @keyframes step { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
         .arrow { position: absolute; width: 80px; right: 0; bottom: 0; opacity: 0; animation: fade-in 0.5s ease-in forwards 1.5s; }
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-        #result-container { display: none; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; }
-        #result-img { max-height: 75%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-        @media (orientation: landscape) { .slide { font-size: 2em; } }
+        #result-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; }
+        #result-img { max-height: 70%; max-width: 90%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+
+        @media (orientation: landscape) {
+            .slide { font-size: 2em; gap: 20px; }
+            #progress-container { top: 15px; }
+            #slides-container { height: calc(100% - 100px); margin-top: 60px; }
+        }
         @media (orientation: portrait) { .slide { font-size: 1.8em; } .polaroid { width: 100px; } }
     </style>
 </head>
 <body>
-<div id="camera-wrapper">
-    <video id="video" autoplay playsinline></video>
-    <div class="camera-controls">
-        <button id="capture-btn"></button>
-        <button id="switch-camera-btn">
-            <img src="/static/images/switch_camera.svg" alt="Сменить камеру">
-        </button>
-    </div>
-</div>
+<div id="camera-wrapper"><video id="video" autoplay playsinline></video><div class="camera-controls"><button id="capture-btn"></button><button id="switch-camera-btn"><img src="/static/images/switch_camera.svg" alt="Сменить камеру"></button></div></div>
 <div id="loader"><div id="progress-container"><p>подождите идёт генерация...</p><div id="progress-bar"><div id="progress-bar-inner"></div></div></div><div id="slides-container"></div></div>
 <div id="result-container"><h2>Ваше фото готово!</h2><img id="result-img" alt="Сгенерированное изображение"><a id="save-btn" href="#" download="ai_photo.png"><button>Сохранить</button></a></div>
 <canvas id="canvas" style="display:none;"></canvas>
 
 <script>
     const SLIDE_DURATION_MS = 3000;
-    // ИСПРАВЛЕНЫ ПУТИ К КАРТИНКАМ
     const slidesData = [
         { text: "Загляни к нам в парк, там ждут", type: 'footprints' },
         { text: "путешествие внутрь мультфильма", images: ['/static/images/slide2_card1.jpg', '/static/images/slide2_card2.jpg', '/static/images/slide2_card3.jpg'] },
@@ -88,13 +83,26 @@
     const resultContainer = document.getElementById('result-container');
     const resultImg = document.getElementById('result-img');
     const saveBtn = document.getElementById('save-btn');
-
     let currentFacingMode = 'environment';
 
+    function preloadImages() {
+        slidesData.forEach(slide => {
+            if (slide.images && slide.images.length > 0) {
+                slide.images.forEach(src => {
+                    const img = new Image();
+                    img.src = src;
+                });
+            }
+        });
+        // ИСПРАВЛЕНЫ РАСШИРЕНИЯ ФАЙЛОВ НА .SVG
+        ['/static/images/footprint.svg', '/static/images/arrow.svg'].forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+    }
+
     async function startCamera(facingMode) {
-        if (video.srcObject) {
-            video.srcObject.getTracks().forEach(track => track.stop());
-        }
+        if (video.srcObject) { video.srcObject.getTracks().forEach(track => track.stop()); }
         const constraints = { video: { facingMode: { exact: facingMode } } };
         try {
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -102,13 +110,12 @@
             currentFacingMode = facingMode;
             video.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)';
         } catch (err) {
-            console.error(`Ошибка при переключении на камеру ${facingMode}: `, err);
+            console.warn(`Точный режим ${facingMode} не сработал, пробуем общий.`);
             try {
                 const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = fallbackStream;
-            } catch (fallbackErr) {
-                alert("Не удалось запустить камеру.");
-            }
+                currentFacingMode = 'environment';
+            } catch (fallbackErr) { alert("Не удалось запустить камеру."); }
         }
     }
 
@@ -117,32 +124,24 @@
         startCamera(newFacingMode);
     });
 
-    startCamera('environment');
-
     captureBtn.addEventListener('click', () => {
         const ctx = canvas.getContext('2d');
         const videoWidth = video.videoWidth;
         const videoHeight = video.videoHeight;
+        const angle = screen.orientation.angle;
 
-        // Логика поворота холста для правильного захвата
-        if (window.innerHeight > window.innerWidth) { // Портретный режим
-            canvas.width = videoHeight;
-            canvas.height = videoWidth;
-            ctx.translate(videoHeight, 0);
-            ctx.rotate(90 * Math.PI / 180);
-        } else { // Ландшафтный режим
-            canvas.width = videoWidth;
-            canvas.height = videoHeight;
-        }
+        const isSideways = angle === 90 || angle === 270 || angle === -90;
+        canvas.width = isSideways ? videoHeight : videoWidth;
+        canvas.height = isSideways ? videoWidth : videoHeight;
 
-        // Отражаем холст, если камера фронтальная, чтобы компенсировать отражение видео
-        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(angle * Math.PI / 180);
+
         if (currentFacingMode === 'user') {
-            ctx.translate(videoWidth, 0);
             ctx.scale(-1, 1);
         }
-        ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
-        ctx.restore();
+
+        ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
 
         cameraWrapper.style.display = 'none';
         loader.style.display = 'flex';
@@ -183,29 +182,29 @@
                 }
                 currentSlideIndex++;
                 if (currentSlideIndex >= slidesData.length) {
-                    resolve();
-                    return;
+                    resolve(); return;
                 }
                 const slideData = slidesData[currentSlideIndex];
                 const slideElement = document.createElement('div');
                 slideElement.classList.add('slide');
                 let contentHTML = `<span>${slideData.text}</span>`;
+
                 if (slideData.type === 'footprints') {
+                    // ИСПРАВЛЕНЫ РАСШИРЕНИЯ ФАЙЛОВ НА .SVG
                     contentHTML += `
                             <div class="footprints-container">
-                                <img src="/static/images/footprint.png" class="footprint">
-                                <img src="/static/images/footprint.png" class="footprint">
-                                <img src="/static/images/footprint.png" class="footprint">
-                                <img src="/static/images/footprint.png" class="footprint">
-                                <img src="/static/images/arrow.png" class="arrow">
+                                <img src="/static/images/footprint.svg" class="footprint">
+                                <img src="/static/images/footprint.svg" class="footprint">
+                                <img src="/static/images/footprint.svg" class="footprint">
+                                <img src="/static/images/footprint.svg" class="footprint">
+                                <img src="/static/images/arrow.svg" class="arrow">
                             </div>`;
                 } else if (slideData.images && slideData.images.length > 0) {
                     contentHTML += '<div class="polaroid-container">';
-                    slideData.images.forEach(imgSrc => {
-                        contentHTML += `<div class="polaroid"><img src="${imgSrc}"></div>`;
-                    });
+                    slideData.images.forEach(imgSrc => { contentHTML += `<div class="polaroid"><img src="${imgSrc}"></div>`; });
                     contentHTML += '</div>';
                 }
+
                 slideElement.innerHTML = contentHTML;
                 slidesContainer.appendChild(slideElement);
                 setTimeout(() => { slideElement.classList.add('active'); }, 50);
@@ -214,6 +213,9 @@
             showNextSlide();
         });
     }
+
+    preloadImages();
+    startCamera('environment');
 </script>
 </body>
 </html>
