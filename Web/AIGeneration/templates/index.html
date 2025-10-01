@@ -26,13 +26,24 @@
         .slide.exiting { animation: slide-out 0.5s ease-in forwards; }
         @keyframes slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-100%); opacity: 0; } }
-        .polaroid-container { position: relative; width: 80%; height: 250px; }
-        .polaroid { position: absolute; left: 50%; top: 50%; background: white; padding: 10px 10px 20px 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 1px solid #eee; width: 150px; opacity: 0; animation: fall 0.8s ease-out forwards; }
+
+        /* НОВЫЕ СТИЛИ ДЛЯ РАСПОЛОЖЕНИЯ POLAROID */
+        .polaroid-container { position: relative; width: 100%; max-width: 600px; height: 300px; display: flex; justify-content: center; align-items: center; }
+        .polaroid { position: absolute; background: white; padding: 10px 10px 20px 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 1px solid #eee; width: 200px; opacity: 0; animation: fall 0.8s ease-out forwards; transition: transform 0.3s ease-out; }
         .polaroid img { width: 100%; display: block; }
-        .polaroid:nth-child(1) { animation-delay: 0.2s; transform: translate(-80%, -60%) rotate(-15deg); }
-        .polaroid:nth-child(2) { animation-delay: 0.4s; transform: translate(-50%, -50%) rotate(5deg); }
-        .polaroid:nth-child(3) { animation-delay: 0.6s; transform: translate(-20%, -40%) rotate(20deg); }
-        @keyframes fall { from { transform: translateY(-300px) rotate(0deg); opacity: 0; } to { opacity: 1; } }
+
+        /* Специальные стили для разного количества картинок */
+        .polaroid-container.count-1 .polaroid:nth-child(1) { width: 280px; transform: translateX(0) translateY(0) rotate(0deg); animation-delay: 0.2s; }
+
+        .polaroid-container.count-2 .polaroid:nth-child(1) { transform: translateX(-120px) translateY(0) rotate(-10deg); animation-delay: 0.2s; }
+        .polaroid-container.count-2 .polaroid:nth-child(2) { transform: translateX(120px) translateY(0) rotate(10deg); animation-delay: 0.4s; }
+
+        .polaroid-container.count-3 .polaroid:nth-child(1) { transform: translateX(-180px) translateY(-20px) rotate(-20deg); animation-delay: 0.2s; }
+        .polaroid-container.count-3 .polaroid:nth-child(2) { transform: translateX(0) translateY(0) rotate(0deg); animation-delay: 0.4s; }
+        .polaroid-container.count-3 .polaroid:nth-child(3) { transform: translateX(180px) translateY(-20px) rotate(20deg); animation-delay: 0.6s; }
+
+        @keyframes fall { from { opacity: 0; transform: translateY(-300px) scale(0.5); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
         .footprints-container { position: relative; width: 80%; max-width: 400px; height: 100px; }
         .footprint { position: absolute; width: 50px; opacity: 0; animation: step 2s ease-in-out forwards; }
         .footprint:nth-child(1) { top: 20px; left: 10%; animation-delay: 0.1s; }
@@ -45,6 +56,7 @@
         #result-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; }
         #result-img { max-height: 70%; max-width: 90%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
 
+        /* Улучшения для горизонтальной ориентации */
         @media (orientation: landscape) {
             .slide { font-size: 2em; gap: 20px; }
             #progress-container { top: 15px; }
@@ -94,8 +106,8 @@
                 });
             }
         });
-        // ИСПРАВЛЕНЫ РАСШИРЕНИЯ ФАЙЛОВ НА .SVG
-        ['/static/images/footprint.svg', '/static/images/arrow.svg'].forEach(src => {
+        // ИСПРАВЛЕНЫ РАСШИРЕНИЯ ФАЙЛОВ НА .SVG (кроме footprint.png)
+        ['/static/images/footprint.png', '/static/images/arrow.svg'].forEach(src => {
             const img = new Image();
             img.src = src;
         });
@@ -190,17 +202,16 @@
                 let contentHTML = `<span>${slideData.text}</span>`;
 
                 if (slideData.type === 'footprints') {
-                    // ИСПРАВЛЕНЫ РАСШИРЕНИЯ ФАЙЛОВ НА .SVG
                     contentHTML += `
                             <div class="footprints-container">
-                                <img src="/static/images/footprint.svg" class="footprint">
-                                <img src="/static/images/footprint.svg" class="footprint">
-                                <img src="/static/images/footprint.svg" class="footprint">
-                                <img src="/static/images/footprint.svg" class="footprint">
+                                <img src="/static/images/footprint.png" class="footprint">
+                                <img src="/static/images/footprint.png" class="footprint">
+                                <img src="/static/images/footprint.png" class="footprint">
+                                <img src="/static/images/footprint.png" class="footprint">
                                 <img src="/static/images/arrow.svg" class="arrow">
                             </div>`;
                 } else if (slideData.images && slideData.images.length > 0) {
-                    contentHTML += '<div class="polaroid-container">';
+                    contentHTML += `<div class="polaroid-container count-${slideData.images.length}">`; // Добавляем класс с количеством
                     slideData.images.forEach(imgSrc => { contentHTML += `<div class="polaroid"><img src="${imgSrc}"></div>`; });
                     contentHTML += '</div>';
                 }
