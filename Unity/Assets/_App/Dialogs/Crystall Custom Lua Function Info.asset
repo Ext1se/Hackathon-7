@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dbbc84c70300ba489dc1fe1961516ec, type: 3}
+  m_Name: Crystall Custom Lua Function Info
+  m_EditorClassIdentifier: 
+  conditionFunctions:
+  - functionName: GetCurrentState
+    parameters: 
+    returnValue: 2
+  scriptFunctions:
+  - functionName: InitGame
+    parameters: 00000000
+    returnValue: 0
+  - functionName: InitGameWithCrystal
+    parameters: 
+    returnValue: 0
+  - functionName: InitGameWithoutCrystal
+    parameters: 
+    returnValue: 0
+  - functionName: StartGame
+    parameters: 
+    returnValue: 0
+  - functionName: PlayGame
+    parameters: 
+    returnValue: 0
+  - functionName: WinGame
+    parameters: 
+    returnValue: 0
+  - functionName: LoseGame
+    parameters: 
+    returnValue: 0
+  - functionName: RestartGame
+    parameters: 
+    returnValue: 0
+  - functionName: ResetGame
+    parameters: 
+    returnValue: 0
+  - functionName: FinishGame
+    parameters: 
+    returnValue: 0
+  - functionName: ShowGamePrizes
+    parameters: 
+    returnValue: 0
+  - functionName: ShowGameInfo
+    parameters: 
+    returnValue: 0
+  - functionName: ShowGameRules
+    parameters: 
+    returnValue: 0
+  - functionName: CatAttack
+    parameters: 
+    returnValue: 0
+  - functionName: OpenUrl
+    parameters: 02000000
+    returnValue: 0
+  - functionName: DogSmile
+    parameters: 
+    returnValue: 0
