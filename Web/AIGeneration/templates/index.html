@@ -10,10 +10,12 @@
         body { font-family: 'CustomFont', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; margin: 0; background-color: #f0f0f0; color: #333; text-align: center; overflow: hidden; }
         #camera-wrapper { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         #video { width: 100%; height: 100%; object-fit: cover; }
-        .camera-controls { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 5; }
+        /* ИЗМЕНЕНИЕ: bottom увеличено для поднятия кнопок */
+        .camera-controls { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 5; }
         #capture-btn { width: var(--button-size); height: var(--button-size); background-color: #fff; border-radius: 50%; border: 6px solid #fff; box-shadow: 0 0 0 4px rgba(0,0,0,0.2); cursor: pointer; outline: none; transition: transform 0.1s; background-image: url('/static/images/camera_shutter.svg'); background-size: 60%; background-repeat: no-repeat; background-position: center; }
         #capture-btn:active { transform: scale(0.9); }
-        #switch-camera-btn { position: absolute; right: 40px; width: 60px; height: 60px; background-color: lightgrey; border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 12px; box-sizing: border-box; }
+        /* ИЗМЕНЕНИЕ: bottom увеличено для поднятия кнопки */
+        #switch-camera-btn { position: absolute; right: 40px; bottom: 10px; /* Относительно .camera-controls, который сам поднялся */ width: 60px; height: 60px; background-color: lightgrey; border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 12px; box-sizing: border-box; }
         #switch-camera-btn img { width: 100%; height: 100%; }
 
         #countdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.5); z-index: 20; font-size: 20em; color: white; }
@@ -91,7 +93,6 @@
                 img.src = slide.image;
             }
         });
-        // ИЗМЕНЕНИЕ: Убрана предзагрузка для arrow.svg
         ['/static/images/footprint.png'].forEach(src => {
             const img = new Image();
             img.src = src;
@@ -172,7 +173,6 @@
                 slideElement.classList.add('slide');
                 let contentHTML = `<span>${slideData.text}</span>`;
                 if (slideData.type === 'footprints') {
-                    // ИЗМЕНЕНИЕ: Строка с arrow.svg удалена отсюда
                     contentHTML += `
                             <div class="footprints-container">
                                 <img src="/static/images/footprint.png" class="footprint">
