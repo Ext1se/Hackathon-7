@@ -2,7 +2,7 @@ using System;
 using System;
 using UnityEngine;
 
-public class Game1 : MonoBehaviour
+public class Game_Deprecated : MonoBehaviour
 {
     private DialogManager _dialogManager;
 

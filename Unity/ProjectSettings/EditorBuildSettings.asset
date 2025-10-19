@@ -8,9 +8,21 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/_Temp/Imagine/ImageTracker/Demos/Scenes/Demo-Basic.unity
     guid: b5fd66145e8eba8429e5c6c0c7b8bd76
-  - enabled: 1
+  - enabled: 0
     path: Assets/_App/Scenes/AR.unity
     guid: 73ed4816eec7b5b46a14860e863dc94b
+  - enabled: 0
+    path: Assets/_Temp/Scenes/AR_TicTacTix.unity
+    guid: cca958a6c9cf3df468aa83e4a6f21299
+  - enabled: 0
+    path: Assets/Imagine/WorldTracker/Demos/Scenes/Demo-3DModel.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 0
+    path: Assets/Imagine/WorldTracker/Demos/Scenes/Wt_It.unity
+    guid: 4174f8b3a7b8df8449e429db05990554
+  - enabled: 1
+    path: Assets/_App/Scenes/AR_WT_IT.unity
+    guid: 7d1ea2bcc37193e468dd29214942eadc
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
