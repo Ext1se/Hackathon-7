@@ -8,6 +8,8 @@
         @font-face { font-family: 'CustomFont'; src: url('/static/fonts/5_Some_Times_Later.otf') format('opentype'); }
         :root { --button-size: 80px; --primary-color: #007aff; }
         body { font-family: 'CustomFont', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; margin: 0; background-color: #f0f0f0; color: #333; text-align: center; overflow: hidden; }
+
+        /* Камера */
         #camera-wrapper { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         #video { width: 100%; height: 100%; object-fit: cover; }
         .camera-controls { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 5; }
@@ -15,14 +17,20 @@
         #capture-btn:active { transform: scale(0.9); }
         #switch-camera-btn { position: absolute; right: 40px; bottom: 10px; width: 60px; height: 60px; background-color: lightgrey; border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 12px; box-sizing: border-box; }
         #switch-camera-btn img { width: 100%; height: 100%; }
+
+        /* Отсчёт */
         #countdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.5); z-index: 20; font-size: 20em; color: white; }
         .countdown-number { animation: zoom-in-out 0.7s ease-in-out forwards; }
         @keyframes zoom-in-out { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+        /* Лоадер + прогресс (детерминированный) */
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; flex-direction: column; justify-content: center; align-items: center; z-index: 10; padding: 20px; box-sizing: border-box; }
         #progress-container { position: absolute; top: 30px; width: 80%; text-align: center; }
         #progress-bar { width: 100%; height: 15px; background-color: #e0e0e0; border-radius: 10px; overflow: hidden; margin-top: 10px; }
-        #progress-bar-inner { width: 100%; height: 100%; background-color: var(--primary-color); border-radius: 10px; animation: progress-indeterminate 2s infinite linear; }
-        @keyframes progress-indeterminate { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        /* БЫЛО: бесконечная анимация — УБРАНО. Теперь шириной управляет JS */
+        #progress-bar-inner { width: 0%; height: 100%; background-color: var(--primary-color); border-radius: 10px; transition: width 0.2s ease; }
+
+        /* Слайды */
         #slides-container { display: flex; justify-content: center; align-items: center; position: relative; width: 90%; height: 70%; overflow: hidden; }
         .slide { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px; font-size: 2.5em; transform: translateX(100%); opacity: 0; }
         .slide.active { animation: slide-in 0.5s ease-out forwards; }
@@ -42,39 +50,45 @@
         .footprint:nth-child(4) { top: 40px; left: 70%; animation-delay: 1.0s; transform: scaleX(-1); }
         @keyframes step { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
 
-        
+        /* Экран результата: грид, чтобы зафиксировать нижнюю кнопку */
         #result-container {
             display: none;
-            flex-direction: column;
-            justify-content: flex-start; 
-            padding-top: 5vh; 
-            align-items: center;
+            position: relative;
+            display: grid;
+            grid-template-rows: auto auto 1fr auto; /* заголовок, картинка, верхние кнопки (растягиваются), нижняя кнопка */
+            grid-template-areas: "title" "image" "topbtns" "bottombtn";
+            align-items: start;
+            justify-items: center;
+            padding: 2vh 0 6vh; /* подняли контент выше (меньше верхний паддинг) и сделали запас снизу под нижнюю кнопку */
             background-color: #f0f0f0;
             box-sizing: border-box;
             width: 100%;
             height: 100%;
         }
-        #result-container h2 {
-            margin-bottom: 2vh; 
-        }
+        #result-container h2 { grid-area: title; margin: 0.5vh 0 1.5vh; }
         #result-img {
-            max-height: 55%; 
+            grid-area: image;
+            max-height: 52%; /* чуть подняли и ограничили высоту, чтобы кнопки всегда влезали */
             max-width: 90%;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            margin-bottom: 3vh; 
+            margin-bottom: 2vh;
         }
-        .result-buttons {
+
+        .result-buttons-top, .result-buttons-bottom {
+            width: 80%;
+            max-width: 400px;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            width: 80%;
-            max-width: 400px;
         }
+        .result-buttons-top { grid-area: topbtns; align-self: start; }
+        .result-buttons-bottom { grid-area: bottombtn; align-self: end; } /* фиксируем нижнюю группу на нижней строке грIDA */
+
         .styled-button {
             font-family: 'CustomFont', sans-serif;
-            font-size: 1.4em; 
-            padding: 10px 15px; 
+            font-size: 1.4em;
+            padding: 10px 15px;
             border-radius: 8px;
             border: none;
             cursor: pointer;
@@ -87,28 +101,59 @@
         }
         .styled-button:active { transform: translateY(2px); border-bottom-width: 2px; }
         #save-btn-wrapper button { background-color: #d93434; border-color: #a62828; }
+        #site-btn button { background-color: #0077cc; border-color: #005ea3; }
         #print-btn { background-color: #28a745; border-color: #1e7e34; }
-        #back-btn { background-color: #6c757d; border-color: #545b62; }
-       
 
+        /* Экран печати */
         #print-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 30px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; z-index: 30; position: fixed; top: 0; left: 0; }
         #print-container img { width: 60%; max-width: 300px; }
         #print-container p { font-size: 1.5em; max-width: 80%; }
+        #back-btn { background-color: #6c757d; border-color: #545b62; }
 
-        @media (orientation: landscape) { .slide { font-size: 2em; gap: 20px; } #progress-container { top: 15px; } #slides-container { height: calc(100% - 100px); margin-top: 60px; } }
-        @media (orientation: portrait) { .slide { font-size: 1.8em; } }
+        @media (orientation: landscape) {
+            .slide { font-size: 2em; gap: 20px; }
+            #progress-container { top: 15px; }
+            #slides-container { height: calc(100% - 100px); margin-top: 60px; }
+        }
+        @media (orientation: portrait) {
+            .slide { font-size: 1.8em; }
+        }
     </style>
 </head>
 <body>
-<div id="camera-wrapper"><video id="video" autoplay playsinline></video><div class="camera-controls"><button id="capture-btn"></button><button id="switch-camera-btn"><img src="/static/images/switch_camera.svg" alt="Сменить камеру"></button></div></div>
-<div id="countdown-overlay"><span id="countdown-number"></span></div>
-<div id="loader"><div id="progress-container"><p>подождите идёт генерация...</p><div id="progress-bar"><div id="progress-bar-inner"></div></div></div><div id="slides-container"></div></div>
+<div id="camera-wrapper">
+    <video id="video" autoplay playsinline></video>
+    <div class="camera-controls">
+        <button id="capture-btn"></button>
+        <button id="switch-camera-btn"><img src="/static/images/switch_camera.svg" alt="Сменить камеру"></button>
+    </div>
+</div>
 
+<div id="countdown-overlay"><span id="countdown-number"></span></div>
+
+<div id="loader">
+    <div id="progress-container">
+        <p>подождите идёт генерация...</p>
+        <div id="progress-bar"><div id="progress-bar-inner"></div></div>
+    </div>
+    <div id="slides-container"></div>
+</div>
+
+<!-- Экран результата (переразмечен) -->
 <div id="result-container">
     <h2>Ваше фото готово!</h2>
     <img id="result-img" alt="Сгенерированное изображение">
-    <div class="result-buttons">
+
+    <!-- верхние кнопки -->
+    <div class="result-buttons-top">
         <a id="save-btn-wrapper" href="#" download="ai_photo.png"><button class="styled-button">Сохранить</button></a>
+        <a id="site-btn" href="https://souzmultpark.ru" target="_blank" rel="noopener">
+            <button class="styled-button">Сайт парка</button>
+        </a>
+    </div>
+
+    <!-- нижняя кнопка — остаётся на тех же координатах (нижняя строка грида) -->
+    <div class="result-buttons-bottom">
         <button id="print-btn" class="styled-button">Распечатать бесплатно</button>
     </div>
 </div>
@@ -123,7 +168,20 @@
 
 <script>
     const SLIDE_DURATION_MS = 3000;
-    const slidesData = [ { text: "Загляни к нам в парк, там ждут", type: 'footprints' }, { text: "путешествие внутрь мультфильма", image: '/static/images/slide1.jpg' }, { text: "тир Пети и волка", image: '/static/images/slide2.jpg' }, { text: "оживи героев мультфильмов", image: '/static/images/slide3.jpg' }, { text: "Купольный кинотеатр", image: '/static/images/slide4.jpg' }, { text: "Прогулка с карлсоном по крышам", image: '/static/images/slide5.jpg' }, { text: "домик Чебурашки", image: '/static/images/slide6.jpg' }, { text: "и много других интерактивных зон", image: null }, { text: "билеты от 800 рублей за 2 часа", image: null } ];
+
+    /* Убрали слайд «тир Пети и волка» */
+    const slidesData = [
+        { text: "Загляни к нам в парк, там ждут", type: 'footprints' },
+        { text: "путешествие внутрь мультфильма", image: '/static/images/slide1.jpg' },
+        /* { text: "тир Пети и волка", image: '/static/images/slide2.jpg' }, */ // удалено
+        { text: "оживи героев мультфильмов", image: '/static/images/slide3.jpg' },
+        { text: "Купольный кинотеатр", image: '/static/images/slide4.jpg' },
+        { text: "Прогулка с карлсоном по крышам", image: '/static/images/slide5.jpg' },
+        { text: "домик Чебурашки", image: '/static/images/slide6.jpg' },
+        { text: "и много других интерактивных зон", image: null },
+        { text: "билеты от 800 рублей за 2 часа", image: null }
+    ];
+
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const captureBtn = document.getElementById('capture-btn');
@@ -139,16 +197,207 @@
     const printBtn = document.getElementById('print-btn');
     const printContainer = document.getElementById('print-container');
     const backBtn = document.getElementById('back-btn');
+
+    /* Прогресс-бар: управляем шириной через JS */
+    const progressInner = document.getElementById('progress-bar-inner');
+    let progressVal = 0;
+    let progressTimer = null;
+
+    function setProgress(p) {
+        progressVal = Math.max(0, Math.min(100, p));
+        progressInner.style.width = progressVal + '%';
+    }
+
+    function startProgress() {
+        setProgress(0);
+        if (progressTimer) clearInterval(progressTimer);
+        // Псевдо-детерминированный прогресс, до ~85%, затем ждём реальный финиш
+        progressTimer = setInterval(() => {
+            const cap = 85;                  // «потолок ожидания»
+            const delta = (cap - progressVal) * 0.08; // ease-out
+            if (progressVal < cap) {
+                setProgress(progressVal + Math.max(0.3, delta));
+            }
+        }, 180);
+    }
+
+    function completeProgress() {
+        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+        setProgress(100);
+    }
+
+    function resetProgress() {
+        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+        setProgress(0);
+    }
+
     let currentFacingMode = 'environment';
-    function preloadImages() { slidesData.forEach(slide => { if (slide.image) { const img = new Image(); img.src = slide.image; } }); ['/static/images/footprint.png'].forEach(src => { const img = new Image(); img.src = src; }); }
-    async function startCamera(facingMode) { if (video.srcObject) { video.srcObject.getTracks().forEach(track => track.stop()); } const constraints = { video: { facingMode: { exact: facingMode } } }; try { const stream = await navigator.mediaDevices.getUserMedia(constraints); video.srcObject = stream; currentFacingMode = facingMode; video.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)'; } catch (err) { console.warn(`Точный режим ${facingMode} не сработал, пробуем общий.`); try { const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true }); video.srcObject = fallbackStream; currentFacingMode = 'environment'; } catch (fallbackErr) { alert("Не удалось запустить камеру."); } } }
-    switchCameraBtn.addEventListener('click', () => { const newFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user'; startCamera(newFacingMode); });
+
+    function preloadImages() {
+        slidesData.forEach(slide => { if (slide.image) { const img = new Image(); img.src = slide.image; } });
+        ['/static/images/footprint.png'].forEach(src => { const img = new Image(); img.src = src; });
+    }
+
+    async function startCamera(facingMode) {
+        if (video.srcObject) { video.srcObject.getTracks().forEach(track => track.stop()); }
+        const constraints = { video: { facingMode: { exact: facingMode } } };
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = stream;
+            currentFacingMode = facingMode;
+            video.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)';
+        } catch (err) {
+            console.warn(`Точный режим ${facingMode} не сработал, пробуем общий.`);
+            try {
+                const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = fallbackStream;
+                currentFacingMode = 'environment';
+            } catch (fallbackErr) {
+                alert("Не удалось запустить камеру.");
+            }
+        }
+    }
+
+    switchCameraBtn.addEventListener('click', () => {
+        const newFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+        startCamera(newFacingMode);
+    });
+
     captureBtn.addEventListener('click', () => { startCountdown(); });
-    function startCountdown() { countdownOverlay.style.display = 'flex'; let count = 3; function showNumber() { if (count > 0) { countdownNumber.innerHTML = `<span class="countdown-number">${count}</span>`; count--; setTimeout(showNumber, 700); } else { countdownOverlay.style.display = 'none'; takePictureAndGenerate(); } } showNumber(); }
-    function takePictureAndGenerate() { const ctx = canvas.getContext('2d'); const videoWidth = video.videoWidth; const videoHeight = video.videoHeight; const angle = screen.orientation.angle; const isSideways = angle === 90 || angle === 270 || angle === -90; canvas.width = isSideways ? videoHeight : videoWidth; canvas.height = isSideways ? videoWidth : videoHeight; ctx.translate(canvas.width / 2, canvas.height / 2); ctx.rotate(angle * Math.PI / 180); if (currentFacingMode === 'user') { ctx.scale(-1, 1); } ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight); cameraWrapper.style.display = 'none'; loader.style.display = 'flex'; canvas.toBlob(blob => { const formData = new FormData(); formData.append('image', blob, 'capture.png'); const generationPromise = fetch('/generate', { method: 'POST', body: formData }); const slideshowPromise = runSlideshow(); Promise.all([generationPromise, slideshowPromise]).then(async ([response]) => { if (!response.ok) { return response.text().then(text => { throw new Error(`Ошибка сервера: ${text || response.statusText}`); }); } const generatedBlob = await response.blob(); const imageUrl = URL.createObjectURL(generatedBlob); resultImg.src = imageUrl; saveBtnWrapper.href = imageUrl; loader.style.display = 'none'; resultContainer.style.display = 'flex'; }).catch(err => { console.error("Ошибка генерации: ", err); alert("Произошла ошибка во время генерации. Попробуйте снова."); loader.style.display = 'none'; cameraWrapper.style.display = 'flex'; }); }, 'image/jpeg', 0.9); }
-    function runSlideshow() { return new Promise(resolve => { let currentSlideIndex = -1; function showNextSlide() { const oldSlide = slidesContainer.querySelector('.slide'); if (oldSlide) { oldSlide.classList.remove('active'); oldSlide.classList.add('exiting'); setTimeout(() => oldSlide.remove(), 500); } currentSlideIndex++; if (currentSlideIndex >= slidesData.length) { resolve(); return; } const slideData = slidesData[currentSlideIndex]; const slideElement = document.createElement('div'); slideElement.classList.add('slide'); let contentHTML = `<span>${slideData.text}</span>`; if (slideData.type === 'footprints') { contentHTML += `<div class="footprints-container"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"><img src="/static/images/footprint.png" class="footprint"></div>`; } else if (slideData.image) { const rotationClass = (currentSlideIndex % 2 === 0) ? 'rotate-right' : 'rotate-left'; contentHTML += `<div class="polaroid ${rotationClass}"><img src="${slideData.image}"></div>`; } slideElement.innerHTML = contentHTML; slidesContainer.appendChild(slideElement); setTimeout(() => { slideElement.classList.add('active'); }, 50); setTimeout(showNextSlide, SLIDE_DURATION_MS); } showNextSlide(); }); }
-    printBtn.addEventListener('click', () => { resultContainer.style.display = 'none'; printContainer.style.display = 'flex'; });
-    backBtn.addEventListener('click', () => { printContainer.style.display = 'none'; resultContainer.style.display = 'flex'; });
+
+    function startCountdown() {
+        countdownOverlay.style.display = 'flex';
+        let count = 3;
+        function showNumber() {
+            if (count > 0) {
+                countdownNumber.innerHTML = `<span class="countdown-number">${count}</span>`;
+                count--;
+                setTimeout(showNumber, 700);
+            } else {
+                countdownOverlay.style.display = 'none';
+                takePictureAndGenerate();
+            }
+        }
+        showNumber();
+    }
+
+    function takePictureAndGenerate() {
+        const ctx = canvas.getContext('2d');
+        const videoWidth = video.videoWidth;
+        const videoHeight = video.videoHeight;
+
+        const angle = screen.orientation && typeof screen.orientation.angle === 'number'
+            ? screen.orientation.angle
+            : 0;
+        const isSideways = angle === 90 || angle === 270 || angle === -90;
+
+        canvas.width = isSideways ? videoHeight : videoWidth;
+        canvas.height = isSideways ? videoWidth : videoHeight;
+
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((angle || 0) * Math.PI / 180);
+        if (currentFacingMode === 'user') { ctx.scale(-1, 1); }
+        ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
+
+        cameraWrapper.style.display = 'none';
+        loader.style.display = 'flex';
+
+        /* запуск детерминированного прогресса */
+        startProgress();
+
+        canvas.toBlob(blob => {
+            const formData = new FormData();
+            formData.append('image', blob, 'capture.png');
+
+            const generationPromise = fetch('/generate', { method: 'POST', body: formData });
+            const slideshowPromise = runSlideshow();
+
+            Promise.all([generationPromise, slideshowPromise]).then(async ([response]) => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(`Ошибка сервера: ${text || response.statusText}`); });
+                }
+
+                const generatedBlob = await response.blob();
+                const imageUrl = URL.createObjectURL(generatedBlob);
+
+                resultImg.src = imageUrl;
+                saveBtnWrapper.href = imageUrl;
+
+                /* доводим прогресс до 100% и показываем результат */
+                completeProgress();
+
+                // небольшая пауза, чтобы пользователь успел увидеть 100%
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    resultContainer.style.display = 'grid';
+                    resetProgress();
+                }, 150);
+            }).catch(err => {
+                console.error("Ошибка генерации: ", err);
+                alert("Произошла ошибка во время генерации. Попробуйте снова.");
+                loader.style.display = 'none';
+                cameraWrapper.style.display = 'flex';
+                resetProgress();
+            });
+        }, 'image/jpeg', 0.9);
+    }
+
+    function runSlideshow() {
+        return new Promise(resolve => {
+            let currentSlideIndex = -1;
+
+            function showNextSlide() {
+                const oldSlide = slidesContainer.querySelector('.slide');
+                if (oldSlide) {
+                    oldSlide.classList.remove('active');
+                    oldSlide.classList.add('exiting');
+                    setTimeout(() => oldSlide.remove(), 500);
+                }
+
+                currentSlideIndex++;
+                if (currentSlideIndex >= slidesData.length) {
+                    resolve();
+                    return;
+                }
+
+                const slideData = slidesData[currentSlideIndex];
+                const slideElement = document.createElement('div');
+                slideElement.classList.add('slide');
+
+                let contentHTML = `<span>${slideData.text}</span>`;
+                if (slideData.type === 'footprints') {
+                    contentHTML += `<div class="footprints-container">
+                        <img src="/static/images/footprint.png" class="footprint">
+                        <img src="/static/images/footprint.png" class="footprint">
+                        <img src="/static/images/footprint.png" class="footprint">
+                        <img src="/static/images/footprint.png" class="footprint">
+                    </div>`;
+                } else if (slideData.image) {
+                    const rotationClass = (currentSlideIndex % 2 === 0) ? 'rotate-right' : 'rotate-left';
+                    contentHTML += `<div class="polaroid ${rotationClass}"><img src="${slideData.image}"></div>`;
+                }
+
+                slideElement.innerHTML = contentHTML;
+                slidesContainer.appendChild(slideElement);
+
+                setTimeout(() => { slideElement.classList.add('active'); }, 50);
+                setTimeout(showNextSlide, SLIDE_DURATION_MS);
+            }
+
+            showNextSlide();
+        });
+    }
+
+    printBtn.addEventListener('click', () => {
+        resultContainer.style.display = 'none';
+        printContainer.style.display = 'flex';
+    });
+
+    backBtn.addEventListener('click', () => {
+        printContainer.style.display = 'none';
+        resultContainer.style.display = 'grid';
+    });
+
     preloadImages();
     startCamera('environment');
 </script>
