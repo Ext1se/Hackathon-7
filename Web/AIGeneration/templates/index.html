@@ -1,92 +1,326 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>AI Фото-будка</title>
     <style>
-        @font-face { font-family: 'CustomFont'; src: url('/static/fonts/5_Some_Times_Later.otf') format('opentype'); }
-        :root { --button-size: 80px; --primary-color: #007aff; }
-        body { font-family: 'CustomFont', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; margin: 0; background-color: #f0f0f0; color: #333; text-align: center; overflow: hidden; }
+        @font-face {
+            font-family: "CustomFont";
+            src: url("/static/fonts/5_Some_Times_Later.otf") format("opentype");
+        }
+        :root {
+            --button-size: 80px;
+            --primary-color: #007aff;
+        }
+        body {
+            font-family: "CustomFont", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            text-align: center;
+            overflow: hidden;
+        }
 
-        /* Камера */
-        #camera-wrapper { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        #video { width: 100%; height: 100%; object-fit: cover; }
-        .camera-controls { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 5; }
-        #capture-btn { width: var(--button-size); height: var(--button-size); background-color: #fff; border-radius: 50%; border: 6px solid #fff; box-shadow: 0 0 0 4px rgba(0,0,0,0.2); cursor: pointer; outline: none; transition: transform 0.1s; background-image: url('/static/images/camera_shutter.svg'); background-size: 60%; background-repeat: no-repeat; background-position: center; }
-        #capture-btn:active { transform: scale(0.9); }
-        #switch-camera-btn { position: absolute; right: 40px; bottom: 10px; width: 60px; height: 60px; background-color: lightgrey; border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 12px; box-sizing: border-box; }
-        #switch-camera-btn img { width: 100%; height: 100%; }
+        #camera-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
-        /* Отсчёт */
-        #countdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; background-color: rgba(0,0,0,0.5); z-index: 20; font-size: 20em; color: white; }
-        .countdown-number { animation: zoom-in-out 0.7s ease-in-out forwards; }
-        @keyframes zoom-in-out { 0% { transform: scale(0.5); opacity: 0; } 40% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-        /* Лоадер + прогресс (детерминированный) */
-        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; flex-direction: column; justify-content: center; align-items: center; z-index: 10; padding: 20px; box-sizing: border-box; }
-        #progress-container { position: absolute; top: 30px; width: 80%; text-align: center; }
-        #progress-bar { width: 100%; height: 15px; background-color: #e0e0e0; border-radius: 10px; overflow: hidden; margin-top: 10px; }
-        /* БЫЛО: бесконечная анимация — УБРАНО. Теперь шириной управляет JS */
-        #progress-bar-inner { width: 0%; height: 100%; background-color: var(--primary-color); border-radius: 10px; transition: width 0.2s ease; }
+        .camera-controls {
+            position: absolute;
+            bottom: 80px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
 
-        /* Слайды */
-        #slides-container { display: flex; justify-content: center; align-items: center; position: relative; width: 90%; height: 70%; overflow: hidden; }
-        .slide { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; flex-direction: column; gap: 20px; font-size: 2.5em; transform: translateX(100%); opacity: 0; }
-        .slide.active { animation: slide-in 0.5s ease-out forwards; }
-        .slide.exiting { animation: slide-out 0.5s ease-in forwards; }
-        @keyframes slide-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slide-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-100%); opacity: 0; } }
-        .polaroid { background: white; padding: 10px 10px 20px 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 1px solid #eee; width: 80%; max-width: 350px; opacity: 0; animation: appear 0.8s ease-out forwards; }
-        .polaroid img { width: 100%; display: block; }
-        @keyframes appear { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
-        .polaroid.rotate-left { transform: rotate(-4deg); }
-        .polaroid.rotate-right { transform: rotate(4deg); }
-        .footprints-container { position: relative; width: 80%; max-width: 400px; height: 100px; }
-        .footprint { position: absolute; width: 50px; opacity: 0; animation: step 2s ease-in-out forwards; }
-        .footprint:nth-child(1) { top: 20px; left: 10%; animation-delay: 0.1s; }
-        .footprint:nth-child(2) { top: 40px; left: 30%; animation-delay: 0.4s; transform: scaleX(-1); }
-        .footprint:nth-child(3) { top: 20px; left: 50%; animation-delay: 0.7s; }
-        .footprint:nth-child(4) { top: 40px; left: 70%; animation-delay: 1.0s; transform: scaleX(-1); }
-        @keyframes step { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        #capture-btn {
+            width: var(--button-size);
+            height: var(--button-size);
+            background-color: #fff;
+            border-radius: 50%;
+            border: 6px solid #fff;
+            box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.1s;
+            background-image: url("/static/images/camera_shutter.svg");
+            background-size: 60%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        #capture-btn:active {
+            transform: scale(0.9);
+        }
 
-        /* Экран результата: грид, чтобы зафиксировать нижнюю кнопку */
+        #switch-camera-btn {
+            position: absolute;
+            right: 40px;
+            bottom: 10px;
+            width: 60px;
+            height: 60px;
+            background-color: lightgrey;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        #switch-camera-btn img {
+            width: 100%;
+            height: 100%;
+        }
+
+        #countdown-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            font-size: 20em;
+            color: white;
+        }
+        .countdown-number {
+            animation: zoom-in-out 0.7s ease-in-out forwards;
+        }
+        @keyframes zoom-in-out {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            40% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+
+        #loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #progress-container {
+            position: absolute;
+            top: 30px;
+            width: 80%;
+            text-align: center;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 15px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        /* Детерминированная шкала: заполняем ширину от 0 до 100% */
+        #progress-bar-inner {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary-color);
+            border-radius: 10px;
+            will-change: width;
+        }
+
+        #slides-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 90%;
+            height: 70%;
+            overflow: hidden;
+        }
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            font-size: 2.5em;
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        .slide.active {
+            animation: slide-in 0.5s ease-out forwards;
+        }
+        .slide.exiting {
+            animation: slide-out 0.5s ease-in forwards;
+        }
+        @keyframes slide-in {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slide-out {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+
+        .polaroid {
+            background: white;
+            padding: 10px 10px 20px 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid #eee;
+            width: 80%;
+            max-width: 350px;
+            opacity: 0;
+            animation: appear 0.8s ease-out forwards;
+        }
+        .polaroid img {
+            width: 100%;
+            display: block;
+        }
+        @keyframes appear {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .polaroid.rotate-left {
+            transform: rotate(-4deg);
+        }
+        .polaroid.rotate-right {
+            transform: rotate(4deg);
+        }
+
+        .footprints-container {
+            position: relative;
+            width: 80%;
+            max-width: 400px;
+            height: 100px;
+        }
+        .footprint {
+            position: absolute;
+            width: 50px;
+            opacity: 0;
+            animation: step 2s ease-in-out forwards;
+        }
+        .footprint:nth-child(1) {
+            top: 20px;
+            left: 10%;
+            animation-delay: 0.1s;
+        }
+        .footprint:nth-child(2) {
+            top: 40px;
+            left: 30%;
+            animation-delay: 0.4s;
+            transform: scaleX(-1);
+        }
+        .footprint:nth-child(3) {
+            top: 20px;
+            left: 50%;
+            animation-delay: 0.7s;
+        }
+        .footprint:nth-child(4) {
+            top: 40px;
+            left: 70%;
+            animation-delay: 1s;
+            transform: scaleX(-1);
+        }
+        @keyframes step {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ======= ЭКРАН РЕЗУЛЬТАТА ======= */
         #result-container {
             display: none;
-            position: relative;
-            display: grid;
-            grid-template-rows: auto auto 1fr auto; /* заголовок, картинка, верхние кнопки (растягиваются), нижняя кнопка */
-            grid-template-areas: "title" "image" "topbtns" "bottombtn";
-            align-items: start;
-            justify-items: center;
-            padding: 2vh 0 6vh; /* подняли контент выше (меньше верхний паддинг) и сделали запас снизу под нижнюю кнопку */
+            flex-direction: column;
+            justify-content: flex-start;
+            padding-top: 2vh; /* было 5vh — подняли блоки выше */
+            align-items: center;
             background-color: #f0f0f0;
             box-sizing: border-box;
             width: 100%;
             height: 100%;
         }
-        #result-container h2 { grid-area: title; margin: 0.5vh 0 1.5vh; }
+        #result-container h2 {
+            margin-bottom: 1.5vh; /* было больше — поджали */
+        }
         #result-img {
-            grid-area: image;
-            max-height: 52%; /* чуть подняли и ограничили высоту, чтобы кнопки всегда влезали */
+            max-height: 50%; /* было 55% — чуть выше остальной контент */
             max-width: 90%;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            margin-bottom: 2vh;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2vh; /* было 3vh — подняли */
         }
 
-        .result-buttons-top, .result-buttons-bottom {
-            width: 80%;
-            max-width: 400px;
+        .result-buttons {
             display: flex;
             flex-direction: column;
             gap: 15px;
+            width: 80%;
+            max-width: 400px;
+            margin-top: auto; /* прижали блок кнопок к низу экрана — позиция печати сохраняется */
         }
-        .result-buttons-top { grid-area: topbtns; align-self: start; }
-        .result-buttons-bottom { grid-area: bottombtn; align-self: end; } /* фиксируем нижнюю группу на нижней строке грIDA */
 
         .styled-button {
-            font-family: 'CustomFont', sans-serif;
+            font-family: "CustomFont", sans-serif;
             font-size: 1.4em;
             padding: 10px 15px;
             border-radius: 8px;
@@ -99,24 +333,71 @@
             width: 100%;
             box-sizing: border-box;
         }
-        .styled-button:active { transform: translateY(2px); border-bottom-width: 2px; }
-        #save-btn-wrapper button { background-color: #d93434; border-color: #a62828; }
-        #site-btn button { background-color: #0077cc; border-color: #005ea3; }
-        #print-btn { background-color: #28a745; border-color: #1e7e34; }
+        .styled-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
 
-        /* Экран печати */
-        #print-container { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 30px; background-color: #f0f0f0; padding: 20px; box-sizing: border-box; width: 100%; height: 100%; z-index: 30; position: fixed; top: 0; left: 0; }
-        #print-container img { width: 60%; max-width: 300px; }
-        #print-container p { font-size: 1.5em; max-width: 80%; }
-        #back-btn { background-color: #6c757d; border-color: #545b62; }
+        #save-btn-wrapper button {
+            background-color: #d93434;
+            border-color: #a62828;
+        }
+        #site-btn-wrapper button {
+            background-color: #0072ce;
+            border-color: #005aa6;
+        }
+        #print-btn {
+            background-color: #28a745;
+            border-color: #1e7e34;
+        }
+        #back-btn {
+            background-color: #6c757d;
+            border-color: #545b62;
+        }
+
+        #print-container {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            z-index: 30;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        #print-container img {
+            width: 60%;
+            max-width: 300px;
+        }
+        #print-container p {
+            font-size: 1.5em;
+            max-width: 80%;
+        }
 
         @media (orientation: landscape) {
-            .slide { font-size: 2em; gap: 20px; }
-            #progress-container { top: 15px; }
-            #slides-container { height: calc(100% - 100px); margin-top: 60px; }
+            .slide {
+                font-size: 2em;
+                gap: 20px;
+            }
+            #progress-container {
+                top: 15px;
+            }
+            #slides-container {
+                height: calc(100% - 100px);
+                margin-top: 60px;
+            }
         }
+
         @media (orientation: portrait) {
-            .slide { font-size: 1.8em; }
+            .slide {
+                font-size: 1.8em;
+            }
         }
     </style>
 </head>
@@ -125,7 +406,9 @@
     <video id="video" autoplay playsinline></video>
     <div class="camera-controls">
         <button id="capture-btn"></button>
-        <button id="switch-camera-btn"><img src="/static/images/switch_camera.svg" alt="Сменить камеру"></button>
+        <button id="switch-camera-btn">
+            <img src="/static/images/switch_camera.svg" alt="Сменить камеру" />
+        </button>
     </div>
 </div>
 
@@ -139,134 +422,108 @@
     <div id="slides-container"></div>
 </div>
 
-<!-- Экран результата (переразмечен) -->
 <div id="result-container">
     <h2>Ваше фото готово!</h2>
-    <img id="result-img" alt="Сгенерированное изображение">
+    <img id="result-img" alt="Сгенерированное изображение" />
 
-    <!-- верхние кнопки -->
-    <div class="result-buttons-top">
-        <a id="save-btn-wrapper" href="#" download="ai_photo.png"><button class="styled-button">Сохранить</button></a>
-        <a id="site-btn" href="https://souzmultpark.ru" target="_blank" rel="noopener">
+    <div class="result-buttons">
+        <a id="save-btn-wrapper" href="#" download="ai_photo.png">
+            <button class="styled-button">Сохранить</button>
+        </a>
+        <a id="site-btn-wrapper" href="https://souzmultpark.ru" target="_blank" rel="noopener">
             <button class="styled-button">Сайт парка</button>
         </a>
-    </div>
-
-    <!-- нижняя кнопка — остаётся на тех же координатах (нижняя строка грида) -->
-    <div class="result-buttons-bottom">
         <button id="print-btn" class="styled-button">Распечатать бесплатно</button>
     </div>
 </div>
 
 <div id="print-container">
-    <img src="/static/images/fake_qr_code.png" alt="QR-код для печати">
+    <img src="/static/images/fake_qr_code.png" alt="QR-код для печати" />
     <p>Для печати покажите QR на стойке администратора в музее</p>
     <button id="back-btn" class="styled-button">Назад</button>
 </div>
 
-<canvas id="canvas" style="display:none;"></canvas>
+<canvas id="canvas" style="display: none"></canvas>
 
 <script>
     const SLIDE_DURATION_MS = 3000;
-
-    /* Убрали слайд «тир Пети и волка» */
+    // УДАЛЁН слайд "тир Пети и волка"
     const slidesData = [
-        { text: "Загляни к нам в парк, там ждут", type: 'footprints' },
-        { text: "путешествие внутрь мультфильма", image: '/static/images/slide1.jpg' },
-        /* { text: "тир Пети и волка", image: '/static/images/slide2.jpg' }, */ // удалено
-        { text: "оживи героев мультфильмов", image: '/static/images/slide3.jpg' },
-        { text: "Купольный кинотеатр", image: '/static/images/slide4.jpg' },
-        { text: "Прогулка с карлсоном по крышам", image: '/static/images/slide5.jpg' },
-        { text: "домик Чебурашки", image: '/static/images/slide6.jpg' },
+        { text: "Загляни к нам в парк, там ждут", type: "footprints" },
+        { text: "путешествие внутрь мультфильма", image: "/static/images/slide1.jpg" },
+        { text: "оживи героев мультфильмов", image: "/static/images/slide3.jpg" },
+        { text: "Купольный кинотеатр", image: "/static/images/slide4.jpg" },
+        { text: "Прогулка с карлсоном по крышам", image: "/static/images/slide5.jpg" },
+        { text: "домик Чебурашки", image: "/static/images/slide6.jpg" },
         { text: "и много других интерактивных зон", image: null },
         { text: "билеты от 800 рублей за 2 часа", image: null }
     ];
 
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const captureBtn = document.getElementById('capture-btn');
-    const switchCameraBtn = document.getElementById('switch-camera-btn');
-    const cameraWrapper = document.getElementById('camera-wrapper');
-    const loader = document.getElementById('loader');
-    const slidesContainer = document.getElementById('slides-container');
-    const resultContainer = document.getElementById('result-container');
-    const resultImg = document.getElementById('result-img');
-    const saveBtnWrapper = document.getElementById('save-btn-wrapper');
-    const countdownOverlay = document.getElementById('countdown-overlay');
-    const countdownNumber = document.getElementById('countdown-number');
-    const printBtn = document.getElementById('print-btn');
-    const printContainer = document.getElementById('print-container');
-    const backBtn = document.getElementById('back-btn');
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const captureBtn = document.getElementById("capture-btn");
+    const switchCameraBtn = document.getElementById("switch-camera-btn");
+    const cameraWrapper = document.getElementById("camera-wrapper");
+    const loader = document.getElementById("loader");
+    const slidesContainer = document.getElementById("slides-container");
+    const resultContainer = document.getElementById("result-container");
+    const resultImg = document.getElementById("result-img");
+    const saveBtnWrapper = document.getElementById("save-btn-wrapper");
+    const countdownOverlay = document.getElementById("countdown-overlay");
+    const countdownNumber = document.getElementById("countdown-number");
+    const printBtn = document.getElementById("print-btn");
+    const printContainer = document.getElementById("print-container");
+    const backBtn = document.getElementById("back-btn");
+    const progressBarInner = document.getElementById("progress-bar-inner");
 
-    /* Прогресс-бар: управляем шириной через JS */
-    const progressInner = document.getElementById('progress-bar-inner');
-    let progressVal = 0;
-    let progressTimer = null;
-
-    function setProgress(p) {
-        progressVal = Math.max(0, Math.min(100, p));
-        progressInner.style.width = progressVal + '%';
-    }
-
-    function startProgress() {
-        setProgress(0);
-        if (progressTimer) clearInterval(progressTimer);
-        // Псевдо-детерминированный прогресс, до ~85%, затем ждём реальный финиш
-        progressTimer = setInterval(() => {
-            const cap = 85;                  // «потолок ожидания»
-            const delta = (cap - progressVal) * 0.08; // ease-out
-            if (progressVal < cap) {
-                setProgress(progressVal + Math.max(0.3, delta));
-            }
-        }, 180);
-    }
-
-    function completeProgress() {
-        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
-        setProgress(100);
-    }
-
-    function resetProgress() {
-        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
-        setProgress(0);
-    }
-
-    let currentFacingMode = 'environment';
+    let currentFacingMode = "environment";
 
     function preloadImages() {
-        slidesData.forEach(slide => { if (slide.image) { const img = new Image(); img.src = slide.image; } });
-        ['/static/images/footprint.png'].forEach(src => { const img = new Image(); img.src = src; });
+        slidesData.forEach((slide) => {
+            if (slide.image) {
+                const img = new Image();
+                img.src = slide.image;
+            }
+        });
+        ["/static/images/footprint.png"].forEach((src) => {
+            const img = new Image();
+            img.src = src;
+        });
     }
 
     async function startCamera(facingMode) {
-        if (video.srcObject) { video.srcObject.getTracks().forEach(track => track.stop()); }
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach((track) => track.stop());
+        }
         const constraints = { video: { facingMode: { exact: facingMode } } };
         try {
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
             currentFacingMode = facingMode;
-            video.style.transform = (facingMode === 'user') ? 'scaleX(-1)' : 'scaleX(1)';
+            video.style.transform = facingMode === "user" ? "scaleX(-1)" : "scaleX(1)";
         } catch (err) {
             console.warn(`Точный режим ${facingMode} не сработал, пробуем общий.`);
             try {
                 const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = fallbackStream;
-                currentFacingMode = 'environment';
+                currentFacingMode = "environment";
             } catch (fallbackErr) {
                 alert("Не удалось запустить камеру.");
             }
         }
     }
 
-    switchCameraBtn.addEventListener('click', () => {
-        const newFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+    switchCameraBtn.addEventListener("click", () => {
+        const newFacingMode = currentFacingMode === "user" ? "environment" : "user";
         startCamera(newFacingMode);
     });
 
-    captureBtn.addEventListener('click', () => { startCountdown(); });
+    captureBtn.addEventListener("click", () => {
+        startCountdown();
+    });
 
     function startCountdown() {
-        countdownOverlay.style.display = 'flex';
+        countdownOverlay.style.display = "flex";
         let count = 3;
         function showNumber() {
             if (count > 0) {
@@ -274,83 +531,98 @@
                 count--;
                 setTimeout(showNumber, 700);
             } else {
-                countdownOverlay.style.display = 'none';
+                countdownOverlay.style.display = "none";
                 takePictureAndGenerate();
             }
         }
         showNumber();
     }
 
+    // Детерминированный прогресс — ровно по времени длительности слайдшоу
+    function startDeterminateProgress(totalMs) {
+        progressBarInner.style.width = "0%";
+        let start = performance.now();
+        let rafId;
+        function tick(now) {
+            const elapsed = now - start;
+            const pct = Math.min(elapsed / totalMs, 1);
+            progressBarInner.style.width = (pct * 100).toFixed(2) + "%";
+            if (pct < 1) rafId = requestAnimationFrame(tick);
+        }
+        rafId = requestAnimationFrame(tick);
+        return {
+            finish() {
+                progressBarInner.style.width = "100%";
+                if (rafId) cancelAnimationFrame(rafId);
+            }
+        };
+    }
+
     function takePictureAndGenerate() {
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         const videoWidth = video.videoWidth;
         const videoHeight = video.videoHeight;
-
-        const angle = screen.orientation && typeof screen.orientation.angle === 'number'
-            ? screen.orientation.angle
-            : 0;
+        const angle = screen.orientation.angle;
         const isSideways = angle === 90 || angle === 270 || angle === -90;
-
         canvas.width = isSideways ? videoHeight : videoWidth;
         canvas.height = isSideways ? videoWidth : videoHeight;
-
         ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((angle || 0) * Math.PI / 180);
-        if (currentFacingMode === 'user') { ctx.scale(-1, 1); }
+        ctx.rotate((angle * Math.PI) / 180);
+        if (currentFacingMode === "user") {
+            ctx.scale(-1, 1);
+        }
         ctx.drawImage(video, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
 
-        cameraWrapper.style.display = 'none';
-        loader.style.display = 'flex';
+        cameraWrapper.style.display = "none";
+        loader.style.display = "flex";
 
-        /* запуск детерминированного прогресса */
-        startProgress();
+        // запускаем детерминированную шкалу на всё время слайдшоу
+        const progressCtl = startDeterminateProgress(SLIDE_DURATION_MS * slidesData.length);
 
-        canvas.toBlob(blob => {
-            const formData = new FormData();
-            formData.append('image', blob, 'capture.png');
+        canvas.toBlob(
+            (blob) => {
+                const formData = new FormData();
+                formData.append("image", blob, "capture.png");
 
-            const generationPromise = fetch('/generate', { method: 'POST', body: formData });
-            const slideshowPromise = runSlideshow();
+                const generationPromise = fetch("/generate", { method: "POST", body: formData });
+                const slideshowPromise = runSlideshow();
 
-            Promise.all([generationPromise, slideshowPromise]).then(async ([response]) => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(`Ошибка сервера: ${text || response.statusText}`); });
-                }
+                Promise.all([generationPromise, slideshowPromise])
+                    .then(async ([response]) => {
+                        progressCtl.finish(); // на финише гарантируем 100%
+                        if (!response.ok) {
+                            return response.text().then((text) => {
+                                throw new Error(`Ошибка сервера: ${text || response.statusText}`);
+                            });
+                        }
+                        const generatedBlob = await response.blob();
+                        const imageUrl = URL.createObjectURL(generatedBlob);
+                        resultImg.src = imageUrl;
+                        saveBtnWrapper.href = imageUrl;
 
-                const generatedBlob = await response.blob();
-                const imageUrl = URL.createObjectURL(generatedBlob);
-
-                resultImg.src = imageUrl;
-                saveBtnWrapper.href = imageUrl;
-
-                /* доводим прогресс до 100% и показываем результат */
-                completeProgress();
-
-                // небольшая пауза, чтобы пользователь успел увидеть 100%
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                    resultContainer.style.display = 'grid';
-                    resetProgress();
-                }, 150);
-            }).catch(err => {
-                console.error("Ошибка генерации: ", err);
-                alert("Произошла ошибка во время генерации. Попробуйте снова.");
-                loader.style.display = 'none';
-                cameraWrapper.style.display = 'flex';
-                resetProgress();
-            });
-        }, 'image/jpeg', 0.9);
+                        loader.style.display = "none";
+                        resultContainer.style.display = "flex";
+                    })
+                    .catch((err) => {
+                        console.error("Ошибка генерации: ", err);
+                        alert("Произошла ошибка во время генерации. Попробуйте снова.");
+                        loader.style.display = "none";
+                        cameraWrapper.style.display = "flex";
+                    });
+            },
+            "image/jpeg",
+            0.9
+        );
     }
 
     function runSlideshow() {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             let currentSlideIndex = -1;
-
             function showNextSlide() {
-                const oldSlide = slidesContainer.querySelector('.slide');
+                const oldSlide = slidesContainer.querySelector(".slide");
                 if (oldSlide) {
-                    oldSlide.classList.remove('active');
-                    oldSlide.classList.add('exiting');
+                    oldSlide.classList.remove("active");
+                    oldSlide.classList.add("exiting");
                     setTimeout(() => oldSlide.remove(), 500);
                 }
 
@@ -361,45 +633,47 @@
                 }
 
                 const slideData = slidesData[currentSlideIndex];
-                const slideElement = document.createElement('div');
-                slideElement.classList.add('slide');
+                const slideElement = document.createElement("div");
+                slideElement.classList.add("slide");
 
                 let contentHTML = `<span>${slideData.text}</span>`;
-                if (slideData.type === 'footprints') {
-                    contentHTML += `<div class="footprints-container">
-                        <img src="/static/images/footprint.png" class="footprint">
-                        <img src="/static/images/footprint.png" class="footprint">
-                        <img src="/static/images/footprint.png" class="footprint">
-                        <img src="/static/images/footprint.png" class="footprint">
-                    </div>`;
+                if (slideData.type === "footprints") {
+                    contentHTML += `
+              <div class="footprints-container">
+                <img src="/static/images/footprint.png" class="footprint" />
+                <img src="/static/images/footprint.png" class="footprint" />
+                <img src="/static/images/footprint.png" class="footprint" />
+                <img src="/static/images/footprint.png" class="footprint" />
+              </div>`;
                 } else if (slideData.image) {
-                    const rotationClass = (currentSlideIndex % 2 === 0) ? 'rotate-right' : 'rotate-left';
-                    contentHTML += `<div class="polaroid ${rotationClass}"><img src="${slideData.image}"></div>`;
+                    const rotationClass = currentSlideIndex % 2 === 0 ? "rotate-right" : "rotate-left";
+                    contentHTML += `<div class="polaroid ${rotationClass}"><img src="${slideData.image}" /></div>`;
                 }
 
                 slideElement.innerHTML = contentHTML;
                 slidesContainer.appendChild(slideElement);
+                setTimeout(() => {
+                    slideElement.classList.add("active");
+                }, 50);
 
-                setTimeout(() => { slideElement.classList.add('active'); }, 50);
                 setTimeout(showNextSlide, SLIDE_DURATION_MS);
             }
-
             showNextSlide();
         });
     }
 
-    printBtn.addEventListener('click', () => {
-        resultContainer.style.display = 'none';
-        printContainer.style.display = 'flex';
+    printBtn.addEventListener("click", () => {
+        resultContainer.style.display = "none";
+        printContainer.style.display = "flex";
     });
 
-    backBtn.addEventListener('click', () => {
-        printContainer.style.display = 'none';
-        resultContainer.style.display = 'grid';
+    backBtn.addEventListener("click", () => {
+        printContainer.style.display = "none";
+        resultContainer.style.display = "flex";
     });
 
     preloadImages();
-    startCamera('environment');
+    startCamera("environment");
 </script>
 </body>
 </html>
